@@ -1,42 +1,312 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Theological Spectrum Visualization</title>
+    <title>성경 무오성의 신학적 스펙트럼</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Warm Theological Neutrals (Ivory, Deep Navy, Slate Gray, Soft Beige) -->
+    <!-- Application Structure Plan: 
+         - 첫 번째 버전의 직관적인 '스펙트럼 셀렉터'와 '사이드바이사이드(Text+Chart)' 레이아웃을 복구했습니다.
+         - 오각형 그래프의 지표를 [명제적 계시, 역사적 실재성, 유기적 인격 사용, 무오성 범위, 인격적 소통]으로 재정의했습니다.
+         - '완전 무오성'은 모든 지표가 높은 고른 오각형으로, '근본주의'는 '유기적 인격 사용' 지표가 급격히 낮은 뾰족한 형태로 구현하여 시각적 대조를 완성했습니다.
+    -->
+    <!-- Visualization & Content Choices: 
+         1. Spectrum Buttons (HTML/Tailwind): 7개 관점을 선형적으로 배치하여 신학적 위치를 한눈에 파악.
+         2. Radar Chart (Chart.js): 완전 무오성과 근본주의의 '인격 투사' 차이를 극명하게 시각화.
+         3. Dynamic Text Panel: 각 관점의 논리를 '하나님의 허구화 위험도'와 함께 상세 기술.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
-        .spectrum {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 50px;
-        }
-        .theory {
-            width: 150px;
-            height: 150px;
-            background-color: #ffffff;
-            border: 2px solid #333;
-            border-radius: 10px;
-            text-align: center;
-            line-height: 150px;
-            font-size: 20px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
-        }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #FDFBF7; color: #2D3748; }
+        h1, h2, h3, .serif-font { font-family: 'Noto Serif KR', serif; }
+        .chart-container { position: relative; width: 100%; max-width: 500px; margin: 0 auto; height: 380px; }
+        .spectrum-btn { transition: all 0.3s ease; }
+        .spectrum-btn.active { background-color: #2C5282; color: white; transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #2C5282; }
+        .spectrum-btn:hover:not(.active) { background-color: #E2E8F0; }
+        .logic-card { border-left: 4px solid #E2E8F0; padding-left: 1rem; margin-bottom: 1.5rem; transition: border-color 0.3s; }
+        .active-logic { border-left-color: #2C5282; }
     </style>
 </head>
-<body>
-    <h1>Theological Spectrum Visualization</h1>
-    <p>This visualization represents different theological viewpoints on the spectrum of biblical interpretation.</p>
-    <div class="spectrum">
-        <div class="theory">Liberal</div>
-        <div class="theory">Moderate</div>
-        <div class="theory">Conservative</div>
-        <div class="theory">Fundamentalist</div>
-    </div>
+<body class="antialiased min-h-screen pb-12">
+
+    <header class="bg-[#ECE8DF] border-b border-[#D6D0C4] py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="inline-block px-3 py-1 bg-white text-xs font-bold tracking-widest text-[#2C5282] uppercase rounded-full mb-4 shadow-sm">
+                Theological Research Artifact
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                성경 무오성의 <span class="text-[#2C5282]">7대 스펙트럼</span>
+            </h1>
+            <p class="text-lg text-gray-700 max-w-3xl leading-relaxed">
+                성경은 하나님의 <strong>인격적 계시</strong>이며 동시에 인간 저자의 <strong>인격이 투사된</strong> 기록입니다. 
+                아래 대시보드에서 각 신학적 관점이 '하나님의 직접 말씀'과 '역사적 사실성'을 어떻게 다루는지 탐구하십시오. 특히 완전 무오성이 근본주의와 어떻게 다른지 그래프의 형태를 통해 확인하시기 바랍니다.
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 border-b-2 border-gray-200 pb-2 serif-font text-gray-800">1. 신학적 스펙트럼 선택</h2>
+            <div class="grid grid-cols-2 md:grid-cols-7 gap-3" id="spectrum-selector">
+                <!-- Buttons injected by JS -->
+            </div>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-12">
+            <div class="grid grid-cols-1 lg:grid-cols-12">
+                
+                <!-- 상세 분석 텍스트 영역 -->
+                <div class="lg:col-span-7 p-8 md:p-12">
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 id="detail-title" class="text-3xl font-bold text-gray-900 serif-font">관점을 선택하세요</h3>
+                        <span id="detail-badge" class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold uppercase"></span>
+                    </div>
+                    
+                    <p id="detail-short" class="text-xl text-[#2C5282] serif-font font-medium mb-10 leading-relaxed italic border-l-4 border-blue-100 pl-4"></p>
+                    
+                    <div id="detail-content" class="space-y-2">
+                        <!-- Content blocks injected by JS -->
+                    </div>
+                </div>
+
+                <!-- 시각화 영역 -->
+                <div class="lg:col-span-5 bg-[#F8FAFC] border-l border-gray-100 p-8 md:p-12 flex flex-col justify-center">
+                    <div class="mb-8 text-center">
+                        <h4 class="text-lg font-bold text-gray-800 mb-2 serif-font">신학적 프로파일 비교</h4>
+                        <p class="text-xs text-gray-500 leading-relaxed">
+                            <span class="inline-block w-3 h-3 bg-[#2C5282] rounded-full mr-1"></span> 선택된 관점 
+                            <span class="inline-block w-3 h-3 border border-gray-400 border-dashed rounded-full ml-3 mr-1"></span> 완전 무오성 (기준)
+                        </p>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+
+                    <div class="mt-8 grid grid-cols-1 gap-2 text-[11px] text-gray-500 bg-white p-4 rounded-xl shadow-inner border border-gray-100">
+                        <p><strong>명제적 계시:</strong> 하나님이 직접 말씀하셨는가?</p>
+                        <p><strong>역사적 실재성:</strong> 아담 등 기록이 사실에 근거하는가?</p>
+                        <p><strong>유기적 인격 사용:</strong> 저자의 인격이 도구로 쓰였는가? (근본주의와 차별점)</p>
+                        <p><strong>무오성 범위:</strong> 전 영역(과학/역사)에 오차가 없는가?</p>
+                        <p><strong>인격적 소통:</strong> 하나님과 관계 맺는 소통인가?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid md:grid-cols-3 gap-8">
+            <div class="bg-[#2C5282] rounded-2xl p-8 text-white shadow-lg">
+                <div class="text-3xl mb-4">⚖️</div>
+                <h4 class="font-bold text-xl mb-3 serif-font">유기적 영감의 조화</h4>
+                <p class="text-blue-100 text-sm leading-relaxed">
+                    하나님은 인격체이시기에 인간 저자의 인격을 '말살'하지 않고 오히려 그들의 문체와 개성을 '사용'하셨습니다. 이것이 근본주의의 기계적 영감과 다른 점입니다.
+                </p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-2xl p-8 shadow-md">
+                <div class="text-3xl mb-4">🛡️</div>
+                <h4 class="font-bold text-xl mb-3 serif-font text-gray-800">역사적 실재의 보전</h4>
+                <p class="text-gray-600 text-sm leading-relaxed">
+                    아담을 허구로 치부하는 순간, 그와 대화하신 하나님도 허구가 됩니다. 신앙의 진리는 역사적 사실이라는 토대 위에서만 객관성을 갖습니다.
+                </p>
+            </div>
+            <div class="bg-[#ECE8DF] border border-[#D6D0C4] rounded-2xl p-8 shadow-md">
+                <div class="text-3xl mb-4">📢</div>
+                <h4 class="font-bold text-xl mb-3 serif-font text-gray-800">인격적 말씀의 실재</h4>
+                <p class="text-gray-700 text-sm leading-relaxed">
+                    하나님은 직접 말씀하실 수 있는 분입니다. 인간의 언어라는 유한한 도구에 자신을 담아 우리에게 명확하고 인격적으로 소통하십니다.
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-12 text-gray-400 text-sm border-t border-gray-100 mt-12">
+        성경 무오성 스펙트럼 연구 리포트 &copy; 2026 Theological Architecture
+    </footer>
+
+    <script>
+        const spectrumData = [
+            {
+                id: 'naturalism',
+                name: '자연주의',
+                short: '신의 개입을 부정하는 인문학적 산물',
+                badge: 'NATURALISM',
+                stats: [1, 1, 10, 1, 1],
+                details: [
+                    { t: '하나님의 직접 말씀', c: '하나님은 부재하며 성경의 모든 말씀은 고대인의 순수한 창작이자 문학적 허구입니다.' },
+                    { t: '저자의 인격 투사', c: '저자가 유일한 주체이며 신적 개입이 없는 완전한 인간의 글입니다.' },
+                    { t: '역사적 실재성 (아담)', c: '아담은 인류 진화 과정의 산물이자 고대인이 고안한 상징적 허구 인물입니다.' },
+                    { t: '허구화 위험도', c: '최상: 하나님 자체가 인간이 만든 허구가 되어 기독교의 근간이 사라집니다.' }
+                ]
+            },
+            {
+                id: 'liberalism',
+                name: '자유주의',
+                short: '인간의 종교적 경험과 진화의 고백',
+                badge: 'LIBERALISM',
+                stats: [2, 2, 10, 2, 3],
+                details: [
+                    { t: '하나님의 직접 말씀', c: '인간이 내면에서 느낀 도덕적/종교적 감흥을 "하나님의 음성"으로 투영한 것입니다.' },
+                    { t: '저자의 인격 투사', c: '저자의 주관적 종교 고백이 핵심이며, 시대적 편견과 오류가 본질을 형성합니다.' },
+                    { t: '역사적 실재성 (아담)', c: '공동체의 정체성을 위한 신화적 서사이며 역사적 사실과는 무관합니다.' },
+                    { t: '허구화 위험도', c: '높음: 하나님을 인간의 의식 안으로 가두어 인격적 실재성을 약화시킵니다.' }
+                ]
+            },
+            {
+                id: 'neoorthodoxy',
+                name: '신정통주의',
+                short: '오류 있는 인간 증언과 말씀의 사건',
+                badge: 'NEO-ORTHODOXY',
+                stats: [4, 2, 8, 3, 6],
+                details: [
+                    { t: '하나님의 직접 말씀', c: '텍스트 자체는 인간의 말이나, 성령의 사건 속에서 말씀으로 다가옵니다.' },
+                    { t: '저자의 인격 투사', c: '저자는 오류투성이 증인이며, 그들의 한계가 본문에 그대로 노출됩니다.' },
+                    { t: '역사적 실재성 (아담)', c: '아담의 실재보다는 죄 아래 있는 모든 인간을 뜻하는 존재론적 모형이 중요합니다.' },
+                    { t: '허구화 위험도', c: '중간: 하나님은 실재하나 텍스트와의 객관적 연결 고리가 약합니다.' }
+                ]
+            },
+            {
+                id: 'limited',
+                name: '제한적 무오성',
+                short: '신앙과 행위의 영역에 한정된 무오성',
+                badge: 'LIMITED',
+                stats: [6, 4, 7, 5, 8],
+                details: [
+                    { t: '하나님의 직접 말씀', c: '구원과 신앙의 핵심 원리에 대해서만 하나님이 주권적으로 개입하셨습니다.' },
+                    { t: '저자의 인격 투사', c: '신앙은 보호받았으나 역사/과학적 서술에는 저자의 무지와 한계가 투영되었습니다.' },
+                    { t: '역사적 실재성 (아담)', c: '신학적 교훈은 진리이나 생물학적/역사적 실재성은 부인해도 무방하다고 봅니다.' },
+                    { t: '허구화 위험도', c: '주의: 역사가 무너지면 신앙의 토대가 흔들리는 논리적 위기에 직면합니다.' }
+                ]
+            },
+            {
+                id: 'incarnational',
+                name: '성육신 모델',
+                short: '신적 진리와 고대 문화적 외피의 결합',
+                badge: 'INCARNATIONAL',
+                stats: [7, 5, 9, 7, 8],
+                details: [
+                    { t: '하나님의 직접 말씀', c: '하나님이 고대인의 낮은 문화적/과학적 수준에 맞춰 자신을 낮춰 소통하셨습니다.' },
+                    { t: '저자의 인격 투사', c: '저자의 고대적 한계가 성경의 "몸"을 형성하며, 오류 가능성을 성육신의 일부로 봅니다.' },
+                    { t: '역사적 실재성 (아담)', c: '하나님의 진리를 담기 위해 고대 근동의 설화적 틀을 빌려온 서사 인물입니다.' },
+                    { t: '허구화 위험도', c: '변동: 인격 투사는 잘 설명하나 하나님의 진실성(사실관계)을 모호하게 할 우려가 큽니다.' }
+                ]
+            },
+            {
+                id: 'full',
+                name: '완전 무오성',
+                short: '유기적 영감을 통한 전 영역의 무오성',
+                badge: 'FULL INERRANCY',
+                stats: [10, 10, 9, 10, 10], // 사용자 관점: 모든 지표가 고루 높음
+                details: [
+                    { t: '하나님의 직접 말씀', c: '전능하신 하나님이 인간의 언어로 자신의 뜻을 오류 없이 직접 전달하신 실재적 명제입니다.' },
+                    { t: '저자의 인격 투사', c: '저자의 개성을 성령이 완벽히 사용하여 진리를 왜곡 없이 기록하게 하신 "유기적 영감"입니다.' },
+                    { t: '역사적 실재성 (아담)', c: '아담은 역사적 실재 인물입니다. 사실이 부인되면 하나님은 유령과 대화한 격이 됩니다.' },
+                    { t: '허구화 위험도', c: '최소: 인격적 소통과 사실성을 동시에 잡아 신앙의 객관성을 보존합니다.' }
+                ]
+            },
+            {
+                id: 'fundamentalism',
+                name: '근본주의',
+                short: '저자의 개성을 배제한 기계적 축자 영감',
+                badge: 'FUNDAMENTALISM',
+                stats: [10, 10, 2, 10, 7], // 근본주의: 인격 사용 지표(2)가 급격히 낮음
+                details: [
+                    { t: '하나님의 직접 말씀', c: '하나님이 단어 하나하나를 직접 불러주어 기록하게 하신 받아쓰기 결과물입니다.' },
+                    { t: '저자의 인격 투사', c: '저자의 인격은 무시되거나 억제됩니다. 저자는 단순한 기계적 도구(펜)에 불과합니다.' },
+                    { t: '역사적 실재성 (아담)', c: '모든 기록을 현대 과학과 무관하게 문자 그대로의 물리적 사실로만 강요합니다.' },
+                    { t: '허구화 위험도', c: '낮음: 다만 인격적 소통보다 "기계적 절대성"이 강조되어 관계가 경직될 수 있습니다.' }
+                ]
+            }
+        ];
+
+        let radarChart;
+        const baseline = spectrumData.find(d => d.id === 'full').stats;
+
+        function initApp() {
+            renderButtons();
+            initChart();
+            select('full');
+        }
+
+        function renderButtons() {
+            const container = document.getElementById('spectrum-selector');
+            spectrumData.forEach(view => {
+                const btn = document.createElement('button');
+                btn.className = 'spectrum-btn p-3 border-2 border-gray-200 rounded-xl text-xs md:text-sm font-bold text-gray-600 bg-white shadow-sm';
+                btn.id = `btn-${view.id}`;
+                btn.innerText = view.name;
+                btn.onclick = () => select(view.id);
+                container.appendChild(btn);
+            });
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['명제적 계시', '역사적 실재성', '유기적 인격 사용', '무오성 범위', '인격적 소통'],
+                    datasets: [{
+                        label: '선택 관점',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(44, 82, 130, 0.4)',
+                        borderColor: 'rgba(44, 82, 130, 1)',
+                        pointBackgroundColor: '#2C5282',
+                        borderWidth: 3
+                    }, {
+                        label: '완전 무오성 (기준)',
+                        data: baseline,
+                        backgroundColor: 'transparent',
+                        borderColor: 'rgba(160, 174, 192, 0.5)',
+                        borderDash: [5, 5],
+                        borderWidth: 1,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            min: 0, max: 10, ticks: { display: false, stepSize: 2 },
+                            pointLabels: { font: { size: 11, weight: '700' }, color: '#4A5568' },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function select(id) {
+            document.querySelectorAll('.spectrum-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${id}`).classList.add('active');
+
+            const view = spectrumData.find(v => v.id === id);
+            document.getElementById('detail-title').innerText = view.name;
+            document.getElementById('detail-badge').innerText = view.badge;
+            document.getElementById('detail-short').innerText = `"${view.short}"`;
+
+            const container = document.getElementById('detail-content');
+            container.innerHTML = '';
+            view.details.forEach(d => {
+                const div = document.createElement('div');
+                div.className = 'logic-card active-logic';
+                div.innerHTML = `<h5 class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-1">${d.t}</h5><p class="text-gray-700 text-sm md:text-base leading-relaxed">${d.c}</p>`;
+                container.appendChild(div);
+            });
+
+            radarChart.data.datasets[0].data = view.stats;
+            radarChart.update();
+        }
+
+        window.onload = initApp;
+    </script>
 </body>
 </html>
